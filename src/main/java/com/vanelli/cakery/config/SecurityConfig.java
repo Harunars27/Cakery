@@ -25,22 +25,22 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // REST API kullandığımız için CSRF'i kapatıyoruz
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        // Müşterilerin ürünleri görmesi ve sipariş oluşturması HERKESE AÇIK
-                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/settings/**").permitAll()
+                        // Müşterilerin ürünleri, kategorileri, ayarları ve GALERİYİ görmesi HERKESE AÇIK
+                        .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**", "/api/settings/**", "/api/gallery/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders/create").permitAll()
 
-                        // Diğer tüm işlemler (Ekleme, Silme, Sipariş Okuma) GİZLİ ve ADMIN YETKİSİ İSTER
+                        // Diğer tüm işlemler (Fotoğraf Ekleme/Silme, Sipariş Okuma) GİZLİ ve ADMIN YETKİSİ İSTER
                         .requestMatchers("/api/**").authenticated()
 
                         // Statik dosyalarımız (HTML, CSS, JS resimler) herkese açık
                         .anyRequest().permitAll()
                 )
-                .httpBasic(Customizer.withDefaults()); // HTTP Basic Authentication (Temel Kimlik Doğrulama) kullanıyoruz
+                .httpBasic(Customizer.withDefaults()); // HTTP Basic Authentication kullanıyoruz
 
         return http.build();
     }
 
-    // Admin Şifresi Artık Railway'deki ADMIN_PASSWORD Değişkeninden Güvenli Alınıyor
+    // Admin Şifresi Railway'deki ADMIN_PASSWORD Değişkeninden Alınıyor
     @Bean
     public UserDetailsService userDetailsService() {
         UserDetails admin = org.springframework.security.core.userdetails.User.builder()

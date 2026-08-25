@@ -21,4 +21,7 @@ public class GalleryService {
     public Gallery addGalleryItem(Gallery gallery) {
         return galleryRepository.save(gallery);
     }
+
+    public void deleteGalleryItem(Long id) {
+    }
 }

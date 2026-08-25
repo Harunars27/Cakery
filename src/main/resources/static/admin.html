@@ -52,6 +52,72 @@
         ul.setting-list li { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
         ul.setting-list li button { background: none; border: none; color: #d32f2f; cursor: pointer; }
         .loading-text { color: var(--gold); font-weight: bold; font-style: italic; }
+
+        /* Mobil Uyumluluk (Responsive) Ayarları */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column !important;
+                overflow-y: auto !important; /* Telefonda kaydırma çubuğunu açar */
+            }
+            .sidebar {
+                width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+                padding: 10px 0 !important;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+            .sidebar-header {
+                padding: 10px 20px !important;
+                border-bottom: none !important;
+            }
+            .sidebar-menu {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 5px !important;
+                justify-content: center !important;
+                padding: 5px 10px !important;
+            }
+            .menu-item {
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                border-radius: 6px !important;
+                border-right: none !important;
+            }
+            .menu-item.active {
+                border-bottom: 2px solid var(--gold) !important;
+                background: rgba(255,255,255,0.1) !important;
+            }
+            .menu-title {
+                display: none !important; /* Mobilde alt başlıkları gizle */
+            }
+            .main-content {
+                width: 100% !important;
+                overflow-y: visible !important;
+            }
+            .content-body {
+                padding: 15px !important; /* Mobilde boşlukları daralt */
+            }
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr !important; /* Kartları alt alta diz */
+                gap: 15px !important;
+            }
+            .form-row {
+                grid-template-columns: 1fr !important; /* Form elemanlarını alt alta diz */
+                gap: 10px !important;
+            }
+            table {
+                display: block;
+                overflow-x: auto; /* Tablo taşarsa yatay kaydırma çubuğu çıkar */
+                white-space: nowrap;
+                width: 100%;
+            }
+            .stat-card {
+                padding: 15px !important;
+            }
+            .card {
+                padding: 15px !important;
+            }
+        }
     </style>
 </head>
 <body>
