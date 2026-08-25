@@ -16,7 +16,6 @@ public class FileUploadController {
 
     private final Cloudinary cloudinary;
 
-    // Railway'e eklediğimiz gizli bilgileri otomatik olarak buraya bağlıyoruz
     public FileUploadController(
             @Value("${CLOUDINARY_CLOUD_NAME}") String cloudName,
             @Value("${CLOUDINARY_API_KEY}") String apiKey,
@@ -38,11 +37,9 @@ public class FileUploadController {
             for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
 
-                // Fotoğrafı Cloudinary bulutuna yüklüyoruz
                 Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
-                String imageUrl = (String) uploadResult.get("secure_url"); // Kalıcı ve güvenli link
+                String imageUrl = (String) uploadResult.get("secure_url");
 
-                // Çoklu fotoğraf desteği için linkleri virgülle birleştiriyoruz
                 if (fileUrls.length() > 0) {
                     fileUrls.append(",");
                 }
