@@ -1,50 +1,54 @@
 package com.vanelli.cakery.controller;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/upload")
 @CrossOrigin(origins = "*")
 public class FileUploadController {
 
-    // Fotoğrafların fiziksel olarak kaydedileceği klasör (Projenin static klasörü)
-    private static final String UPLOAD_DIR = "src/main/resources/static/";
+    private final Cloudinary cloudinary;
+
+    // Railway'e eklediğimiz gizli bilgileri otomatik olarak buraya bağlıyoruz
+    public FileUploadController(
+            @Value("${CLOUDINARY_CLOUD_NAME}") String cloudName,
+            @Value("${CLOUDINARY_API_KEY}") String apiKey,
+            @Value("${CLOUDINARY_API_SECRET}") String apiSecret) {
+
+        this.cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", cloudName,
+                "api_key", apiKey,
+                "api_secret", apiSecret,
+                "secure", true
+        ));
+    }
 
     @PostMapping("/multiple")
     public String uploadFiles(@RequestParam("files") MultipartFile[] files) {
-        StringBuilder fileNames = new StringBuilder();
+        StringBuilder fileUrls = new StringBuilder();
 
         try {
-            // Eğer klasör yoksa oluştur
-            File dir = new File(UPLOAD_DIR);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
             for (MultipartFile file : files) {
                 if (file.isEmpty()) continue;
 
-                // Aynı isimde iki dosya yüklenirse çakışmasın diye benzersiz (UUID) bir kod ekliyoruz
-                String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-                Path path = Paths.get(UPLOAD_DIR + uniqueFileName);
+                // Fotoğrafı Cloudinary bulutuna yüklüyoruz
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+                String imageUrl = (String) uploadResult.get("secure_url"); // Kalıcı ve güvenli link
 
-                // Dosyayı sunucuya kaydet
-                Files.write(path, file.getBytes());
-
-                // Veritabanına yazılacak isimleri virgülle birleştir (Çoklu fotoğraf desteği için)
-                if (fileNames.length() > 0) {
-                    fileNames.append(",");
+                // Çoklu fotoğraf desteği için linkleri virgülle birleştiriyoruz
+                if (fileUrls.length() > 0) {
+                    fileUrls.append(",");
                 }
-                fileNames.append(uniqueFileName);
+                fileUrls.append(imageUrl);
             }
-            return fileNames.toString();
+            return fileUrls.toString();
         } catch (IOException e) {
             e.printStackTrace();
             return "error";
