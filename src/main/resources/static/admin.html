@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanelli | Yönetim</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root { --bg-color: #f4f7f6; --sidebar-bg: #2B211C; --text-main: #333; --text-light: #888; --gold: #A9824F; --white: #ffffff; --border: #e0e0e0; }
+        body { margin: 0; font-family: 'Manrope', sans-serif; background: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        * { box-sizing: border-box; }
+        #login-screen { position: fixed; inset: 0; background: var(--sidebar-bg); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: 0.5s; }
+        .login-box { background: var(--white); padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 350px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--white); display: flex; flex-direction: column; overflow-y: auto; transition: 0.3s; }
+        .sidebar-header { padding: 30px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: center; }
+        .sidebar-menu { flex: 1; padding: 20px 0; }
+        .menu-title { font-size: 11px; text-transform: uppercase; color: #777; padding: 0 25px; margin: 20px 0 10px 0; }
+        .menu-item { padding: 12px 25px; display: flex; align-items: center; gap: 15px; color: #ccc; cursor: pointer; transition: 0.3s; font-size: 14px; font-weight: 500; }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.05); color: var(--gold); border-right: 3px solid var(--gold); }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar { background: var(--white); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 40px; }
+        .card { background: var(--white); border-radius: 12px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); margin-bottom: 30px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;}
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--white); padding: 25px; border-radius: 12px; border-left: 4px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
+        .stat-card .number { font-size: 32px; font-weight: 700; margin: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+        .btn-primary { background: var(--gold); color: var(--white); }
+        .btn-danger { background: #feebeb; color: #d32f2f; }
+        .btn-success { background: #25D366; color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label.main-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+
+        .checkbox-group { display: flex; flex-direction: column; gap: 8px; max-height: 120px; overflow-y: auto; padding: 10px; border: 1px solid var(--border); border-radius: 6px; background: #fafafa; }
+        .checkbox-group label { font-weight: 500; font-size: 13px; display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; }
+        .checkbox-group input { margin: 0; cursor: pointer; width: 16px; height: 16px; accent-color: var(--gold); }
+
+        .file-drop-area { position: relative; display: flex; flex-direction: column; align-items: center; padding: 25px; border: 2px dashed var(--border); border-radius: 8px; background: #fafafa; cursor: pointer; text-align:center;}
+        .file-drop-area input[type="file"] { position: absolute; left: 0; top: 0; height: 100%; width: 100%; opacity: 0; cursor: pointer; }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
+        .img-preview { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; }
+        ul.setting-list { list-style: none; padding: 0; margin: 0; }
+        ul.setting-list li { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        ul.setting-list li button { background: none; border: none; color: #d32f2f; cursor: pointer; }
+        .loading-text { color: var(--gold); font-weight: bold; font-style: italic; }
+    </style>
+</head>
+<body>
+<div id="login-screen">
+    <div class="login-box">
+        <h2>Vanelli Yönetim</h2>
+        <input type="password" id="admin-pass" class="form-control" placeholder="Admin Şifresi" style="margin: 15px 0;">
+        <button class="btn btn-primary" style="width: 100%;" onclick="checkLogin()">Giriş Yap</button>
+        <p id="login-error" style="color: #d32f2f; display: none;">Hatalı şifre!</p>
+    </div>
+</div>
+
+<div class="sidebar">
+    <div class="sidebar-header"><h2 style="color:var(--gold); margin:0;">VANELLI</h2></div>
+    <div class="sidebar-menu">
+        <div class="menu-item active" onclick="switchPage('dashboard')"><i data-feather="grid"></i> Özet Durum</div>
+        <div class="menu-item" onclick="switchPage('orders')"><i data-feather="shopping-bag"></i> Sipariş Yönetimi</div>
+        <div class="menu-title">Mağaza Yönetimi</div>
+        <div class="menu-item" onclick="switchPage('products')"><i data-feather="box"></i> Ürün & Vitrin Yönetimi</div>
+        <div class="menu-item" onclick="switchPage('categories')"><i data-feather="layers"></i> Kategoriler</div>
+        <div class="menu-title">Sistem & İçerik</div>
+        <div class="menu-item" onclick="switchPage('builder-settings')"><i data-feather="tool"></i> Atölye Seçenekleri</div>
+        <div class="menu-item" onclick="switchPage('settings')"><i data-feather="settings"></i> Site & SEO Ayarları</div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="content-body">
+
+        <div id="dashboard" class="page-section active">
+            <div class="grid-3">
+                <div class="stat-card"><h3>Bekleyen Sipariş</h3><p class="number" id="stat-new-orders" style="color: #d32f2f;">0</p></div>
+                <div class="stat-card"><h3>Toplam Ciro (Bekleyen)</h3><p class="number" id="stat-total-revenue">₺0</p></div>
+                <div class="stat-card" style="border-left-color: #388e3c;"><h3>Yayındaki Ürün Sayısı</h3><p class="number" id="stat-total-products">0</p></div>
+            </div>
+
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+                    <h3 style="margin: 0;">Son Gelen Siparişler</h3>
+                    <button class="btn btn-outline" style="padding:8px 15px; font-size:12px;" onclick="fetchOrders()"><i data-feather="refresh-cw"></i> Tabloyu Yenile</button>
+                </div>
+                <table id="dash-order-table">
+                    <thead>
+                    <tr>
+                        <th>Müşteri</th>
+                        <th>Sipariş İçeriği</th>
+                        <th style="width: 150px;">Durum</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="orders" class="page-section">
+            <div class="card">
+                <h3 style="margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 20px;">Detaylı Sipariş Yönetimi</h3>
+                <table id="main-order-table"><thead><tr><th>ID</th><th>Müşteri & İletişim</th><th>Sipariş Detayı</th><th>Tarih</th><th>Durum Güncelle</th><th>İşlemler</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <div id="products" class="page-section">
+            <div class="card" style="margin-bottom: 30px;">
+                <h3 style="margin-top: 0; margin-bottom: 20px;" id="form-title">Yeni Ürün Ekle</h3>
+                <form id="add-product-form" onsubmit="event.preventDefault(); submitProduct();">
+                    <input type="hidden" id="prod-id">
+                    <div class="form-row">
+                        <div class="form-group"><label class="main-label">Ürün Adı</label><input type="text" id="prod-name" class="form-control" required></div>
+                        <div class="form-group"><label class="main-label">Taban Fiyat (₺)</label><input type="number" id="prod-price" class="form-control" required></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="main-label">Kategoriler (Birden fazla seçebilirsiniz)</label>
+                            <div id="prod-category-container" class="checkbox-group"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="main-label">Görüneceği Alanlar</label>
+                            <div id="prod-section-container" class="checkbox-group">
+                                <label><input type="checkbox" value="Büyük Vitrin (Pastalar)"> Büyük Vitrin (Pastalar)</label>
+                                <label><input type="checkbox" value="İşaretli Kolleksiyon (Tatlılar)"> İşaretli Kolleksiyon (Tatlılar)</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label class="main-label">Boyutlar ve Fiyat Farkı</label><input type="text" id="prod-sizes" class="form-control" placeholder="Örn: Standart:0, Büyük Boy:500"></div>
+                        <div class="form-group"><label class="main-label">İçerik / Aroma Seçenekleri</label><input type="text" id="prod-flavors" class="form-control" placeholder="Örn: Sütlü Çikolata, Frambuaz"></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label class="main-label">Alerjen Uyarıları (Opsiyonel)</label><input type="text" id="prod-allergens" class="form-control" placeholder="Örn: Fıstık, Süt ürünü, Gluten"></div>
+                        <div class="form-group"><label class="main-label">Vitrinde Göster (Aktif/Pasif)</label><select id="prod-isactive" class="form-control"><option value="true">Evet, Vitrinde Göster</option><option value="false">Hayır, Gizle (Pasif)</option></select></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group"><label class="main-label">Açıklama</label><textarea id="prod-desc" class="form-control" rows="3" required></textarea></div>
+                        <div class="form-group">
+                            <label class="main-label">Ürün Fotoğrafları (.png / .jpg)</label>
+                            <div class="file-drop-area">
+                                <span id="prod-file-text">Sürükle veya Çoklu Seç</span>
+                                <input type="file" id="prod-image" accept="image/*" multiple onchange="updateFileText(this)">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-prod"><i data-feather="upload"></i> Ürünü Yükle ve Kaydet</button>
+                    <button type="button" class="btn btn-outline" style="display:none;" id="btn-cancel-edit" onclick="cancelEdit()">İptal Et</button>
+                    <span id="prod-loading" class="loading-text" style="display:none; margin-left: 15px;">Fotoğraflar Yükleniyor... Lütfen bekleyin.</span>
+                </form>
+            </div>
+            <div class="card">
+                <h3 style="margin: 0 0 20px 0;">Mevcut Ürünler</h3>
+                <table id="product-list-table"><thead><tr><th>Görsel</th><th>Ürün Adı</th><th>Kategoriler</th><th>Fiyat</th><th>Durum</th><th>İşlemler</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <div id="categories" class="page-section">
+            <div class="card">
+                <h3 style="margin-top: 0; margin-bottom: 20px;">Kategori Yönetimi</h3>
+                <form id="cat-form" onsubmit="event.preventDefault(); addCategory();" style="margin-bottom: 30px;">
+                    <div class="form-row">
+                        <div class="form-group"><label class="main-label">Kategori Adı</label><input type="text" id="cat-name" class="form-control" required></div>
+                        <div class="form-group">
+                            <label class="main-label">Kategori Kapak Fotoğrafı</label>
+                            <div class="file-drop-area" style="padding: 15px;">
+                                <span id="cat-file-text">Sürükle & Bırak</span>
+                                <input type="file" id="cat-image" accept="image/*" onchange="document.getElementById('cat-file-text').innerText = this.files[0].name" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-cat"><i data-feather="upload"></i> Kategori Yükle</button>
+                    <span id="cat-loading" class="loading-text" style="display:none; margin-left: 15px;">Yükleniyor...</span>
+                </form>
+                <table id="categories-table"><thead><tr><th>Görsel</th><th>Kategori Adı</th><th>İşlem</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+
+        <div id="builder-settings" class="page-section">
+            <div class="grid-2"><div class="card"><h3 style="margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 15px;">Pasta Şekli & Formu</h3><div class="form-group" style="display:flex; gap:10px;"><input type="text" id="input_builder_shape" class="form-control" placeholder="Örn: Kare"><button class="btn btn-primary" onclick="addSetting('builder_shape', document.getElementById('input_builder_shape').value)">Ekle</button></div><ul class="setting-list" id="list_builder_shape"></ul></div>
+                <div class="card"><h3 style="margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 15px;">Kek Tabanları (+ Fiyat)</h3><div class="form-group" style="display:flex; gap:10px;"><input type="text" id="input_builder_sponge" class="form-control" placeholder="Örn: Red Velvet:+50"><button class="btn btn-primary" onclick="addSetting('builder_sponge', document.getElementById('input_builder_sponge').value)">Ekle</button></div><small style="color:var(--text-light); margin-bottom:10px; display:block;">Fiyat farkı için İsim:+Fiyat yazın.</small><ul class="setting-list" id="list_builder_sponge"></ul></div></div>
+            <div class="grid-2"><div class="card"><h3 style="margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 15px;">İç Dolgu & Krema (+ Fiyat)</h3><div class="form-group" style="display:flex; gap:10px;"><input type="text" id="input_builder_cream" class="form-control" placeholder="Örn: Orman Meyveli:+100"><button class="btn btn-primary" onclick="addSetting('builder_cream', document.getElementById('input_builder_cream').value)">Ekle</button></div><small style="color:var(--text-light); margin-bottom:10px; display:block;">Fiyat farkı için İsim:+Fiyat yazın.</small><ul class="setting-list" id="list_builder_cream"></ul></div>
+                <div class="card"><h3 style="margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 15px;">İlave Süslemeler (+ Fiyat)</h3><div class="form-group" style="display:flex; gap:10px;"><input type="text" id="input_builder_coating" class="form-control" placeholder="Örn: Extra Draje:+50"><button class="btn btn-primary" onclick="addSetting('builder_coating', document.getElementById('input_builder_coating').value)">Ekle</button></div><small style="color:var(--text-light); margin-bottom:10px; display:block;">Fiyat farkı için İsim:+Fiyat yazın.</small><ul class="setting-list" id="list_builder_coating"></ul></div></div>
+        </div>
+
+        <div id="settings" class="page-section">
+            <div class="grid-2">
+                <div class="card">
+                    <h3 style="margin-top: 0; margin-bottom: 20px;">Sitedeki Görselleri Değiştir</h3>
+                    <form onsubmit="event.preventDefault(); uploadAndSaveHero();">
+                        <div class="form-group">
+                            <label class="main-label">İmza Pastası (Ana Sayfa Kapak)</label>
+                            <div class="file-drop-area" style="padding: 15px;">
+                                <span id="hero-file-text">Sürükle & Bırak veya Tıkla</span>
+                                <input type="file" id="hero-img-input" accept="image/*" onchange="document.getElementById('hero-file-text').innerText = this.files[0].name" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;" id="btn-submit-hero"><i data-feather="upload"></i> Fotoğrafı Yükle ve Güncelle</button>
+                        <span id="hero-loading" class="loading-text" style="display:none; text-align:center; display:block; margin-top:10px;">Yükleniyor...</span>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-top: 0; margin-bottom: 20px;">Özel Tasarım Fiyatlandırması</h3>
+                    <div class="form-group">
+                        <label class="main-label">Kişi Başı Dilim Ücreti (₺)</label>
+                        <input type="number" id="setting-portion-price" class="form-control" placeholder="Örn: 220">
+                        <small style="color:var(--text-light); display:block; margin-top:5px;">Müşteri atölyede "20 Kişilik" yazdığında taban fiyat bu rakamla çarpılır.</small>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%;" onclick="saveSettingAjax('portion_price', document.getElementById('setting-portion-price').value)">Fiyat Çarpanını Kaydet</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top: 0; margin-bottom: 20px;">SEO & Site Bilgileri</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="main-label">Site Başlığı (Title)</label>
+                        <input type="text" id="setting-seo-title" class="form-control" placeholder="Örn: Vanelli Cakery | Lüks Butik Pasta">
+                    </div>
+                    <div class="form-group">
+                        <label class="main-label">Site Açıklaması (Meta Description)</label>
+                        <textarea id="setting-seo-desc" class="form-control" rows="2" placeholder="Örn: Özel günleriniz için el yapımı tasarım pastalar..."></textarea>
+                    </div>
+                </div>
+                <button class="btn btn-primary" style="width:100%;" onclick="saveSeoSettings()">SEO Ayarlarını Kaydet</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    feather.replace();
+    let allProducts = [];
+    let siteSettings = {};
+    const API_URL = "";
+
+    // YENİ: Gerçek kimlik doğrulama anahtarını tutacak değişken
+    let adminAuthHeader = "";
+
+    // YENİ: Giriş kontrolü artık sahte değil, sunucuya gerçek bir test isteği atarak yapılıyor
+    function checkLogin() {
+        const pass = document.getElementById('admin-pass').value;
+        // Btoa fonksiyonu "admin:şifre" metnini Base64 formatında kriptolar (HTTP Basic Auth standardı)
+        adminAuthHeader = "Basic " + btoa("admin:" + pass);
+
+        // Sunucuya "Ben admin miyim?" diye gizli bir bölgeye (orders/all) erişim testi yapıyoruz
+        authFetch(API_URL + '/api/orders/all')
+        .then(res => {
+            if(res.ok) {
+                document.getElementById('login-screen').style.display = 'none';
+                fetchAllData(); // Şifre doğruysa paneli aç
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        });
+    }
+    document.getElementById("admin-pass").addEventListener("keypress", e => { if (e.key === "Enter") checkLogin(); });
+
+    // YENİ: Artık isteklerimizi normal fetch() ile değil, içine gizli anahtarımızı koyduğumuz bu fonksiyonla atıyoruz
+    function authFetch(url, options = {}) {
+        if (!options.headers) options.headers = {};
+        options.headers['Authorization'] = adminAuthHeader;
+        return fetch(url, options);
+    }
+
+    function switchPage(pageId) {
+        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
+        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    function fetchAllData() { fetchOrders(); fetchProducts(); fetchCategories(); fetchSettings(); }
+
+    function fetchCategories() {
+        authFetch(API_URL + '/api/categories/all').then(r=>r.json()).then(data => {
+            const tbody = document.querySelector('#categories-table tbody'); tbody.innerHTML = '';
+            const catContainer = document.getElementById('prod-category-container'); catContainer.innerHTML = '';
+            data.forEach(c => {
+                tbody.innerHTML += `<tr><td><img src="${c.imageUrl}" class="img-preview" onerror="this.style.display='none'"></td><td>${c.name}</td><td><button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.id})">Sil</button></td></tr>`;
+                catContainer.innerHTML += `<label><input type="checkbox" value="${c.name}"> ${c.name}</label>`;
+            });
+        });
+    }
+
+    async function addCategory() {
+        const fileInput = document.getElementById('cat-image');
+        let imageUrl = "";
+
+        document.getElementById('btn-submit-cat').style.display = 'none';
+        document.getElementById('cat-loading').style.display = 'inline-block';
+
+        if (fileInput.files.length > 0) {
+            const formData = new FormData();
+            formData.append("files", fileInput.files[0]);
+            try {
+                let uploadRes = await authFetch(API_URL + '/api/upload/multiple', { method: 'POST', body: formData });
+                imageUrl = await uploadRes.text();
+            } catch(e) { alert("Resim yüklenemedi!"); resetCatForm(); return; }
+        }
+
+        authFetch(API_URL + '/api/categories/add', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: document.getElementById('cat-name').value, imageUrl: imageUrl })
+        }).then(() => { alert('Kategori Eklendi'); document.getElementById('cat-form').reset(); fetchCategories(); resetCatForm(); });
+    }
+
+    function resetCatForm() {
+        document.getElementById('cat-file-text').innerText = 'Sürükle & Bırak';
+        document.getElementById('btn-submit-cat').style.display = 'inline-flex';
+        document.getElementById('cat-loading').style.display = 'none';
+    }
+
+    function deleteCategory(id) { authFetch(API_URL + `/api/categories/delete/${id}`, { method: 'DELETE' }).then(() => fetchCategories()); }
+
+    function fetchSettings() {
+        authFetch(API_URL + '/api/settings/all').then(r=>r.json()).then(data => {
+            siteSettings = {}; data.forEach(d => siteSettings[d.id] = d.value);
+            if(siteSettings['portion_price']) document.getElementById('setting-portion-price').value = siteSettings['portion_price'];
+            if(siteSettings['seo_title']) document.getElementById('setting-seo-title').value = siteSettings['seo_title'];
+            if(siteSettings['seo_desc']) document.getElementById('setting-seo-desc').value = siteSettings['seo_desc'];
+
+            ['builder_shape', 'builder_sponge', 'builder_cream', 'builder_coating'].forEach(key => {
+                const ul = document.getElementById('list_' + key); ul.innerHTML = '';
+                if(siteSettings[key]) { siteSettings[key].split(',').forEach(item => { if(item.trim()) ul.innerHTML += `<li>${item.trim()} <button onclick="removeSetting('${key}', '${item.trim()}')"><i data-feather="x"></i></button></li>`; }); }
+            });
+            feather.replace();
+        });
+    }
+
+    function addSetting(key, val) { if(!val.trim()) return; let current = siteSettings[key] ? siteSettings[key].split(',').map(i=>i.trim()).filter(i=>i) : []; current.push(val.trim()); authFetch(API_URL + '/api/settings/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: key, value: current.join(',') }) }).then(() => { fetchSettings(); document.getElementById('input_' + key).value = ''; }); }
+    function removeSetting(key, val) { let current = siteSettings[key].split(',').map(i=>i.trim()).filter(i => i && i !== val); authFetch(API_URL + '/api/settings/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: key, value: current.join(',') }) }).then(() => fetchSettings()); }
+    function saveSettingAjax(key, val) { authFetch(API_URL + '/api/settings/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: key, value: val }) }).then(() => alert("Ayar Güncellendi")); }
+
+    function saveSeoSettings() {
+        saveSettingAjax('seo_title', document.getElementById('setting-seo-title').value);
+        setTimeout(() => { saveSettingAjax('seo_desc', document.getElementById('setting-seo-desc').value); }, 300);
+    }
+
+    async function uploadAndSaveHero() {
+        const fileInput = document.getElementById('hero-img-input');
+        if(fileInput.files.length === 0) return;
+        document.getElementById('btn-submit-hero').style.display = 'none';
+        document.getElementById('hero-loading').style.display = 'block';
+        const formData = new FormData();
+        formData.append("files", fileInput.files[0]);
+        try {
+            let uploadRes = await authFetch(API_URL + '/api/upload/multiple', { method: 'POST', body: formData });
+            let fileName = await uploadRes.text();
+            saveSettingAjax('hero_image', fileName);
+        } catch(e) { alert("Yükleme başarısız!"); }
+        document.getElementById('btn-submit-hero').style.display = 'inline-flex';
+        document.getElementById('hero-loading').style.display = 'none';
+        document.getElementById('hero-file-text').innerText = 'Sürükle & Bırak veya Tıkla';
+    }
+
+    function updateFileText(input) {
+        if(input.files.length > 1) document.getElementById('prod-file-text').innerText = input.files.length + " fotoğraf seçildi";
+        else if(input.files.length === 1) document.getElementById('prod-file-text').innerText = input.files[0].name;
+        else document.getElementById('prod-file-text').innerText = "Sürükle veya Çoklu Seç";
+    }
+
+    function fetchProducts() {
+        authFetch(API_URL + '/api/products/all').then(r=>r.json()).then(data => {
+            allProducts = data;
+            document.getElementById('stat-total-products').innerText = data.length;
+            const tbody = document.querySelector('#product-list-table tbody'); tbody.innerHTML = '';
+            data.forEach(p => {
+                let firstImg = p.imageUrl ? p.imageUrl.split(',')[0] : "";
+                let statusBadge = (p.isActive !== false) ? `<span style="background:#e8f5e9; color:#388e3c; padding:4px 8px; border-radius:4px; font-size:11px;">Aktif</span>` : `<span style="background:#ffebee; color:#d32f2f; padding:4px 8px; border-radius:4px; font-size:11px;">Pasif</span>`;
+
+                tbody.innerHTML += `<tr><td><img src="${firstImg}" class="img-preview" onerror="this.style.display='none'"></td><td><strong>${p.name}</strong></td><td><span style="font-size:11px; background:#f0f0f0; padding:4px 8px; border-radius:4px;">${p.category || '-'}</span></td><td>₺${p.price}</td><td>${statusBadge}</td><td>
+                    <button class="btn btn-outline btn-sm" onclick="editProduct(${p.id})" style="margin-right:5px;"><i data-feather="edit-2"></i></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})"><i data-feather="trash-2"></i></button>
+                </td></tr>`;
+            });
+            feather.replace();
+        });
+    }
+
+    async function submitProduct() {
+        const id = document.getElementById('prod-id').value;
+        const fileInput = document.getElementById('prod-image');
+
+        const catBoxes = document.querySelectorAll('#prod-category-container input:checked');
+        const selectedCategories = Array.from(catBoxes).map(cb => cb.value).join(', ');
+        const secBoxes = document.querySelectorAll('#prod-section-container input:checked');
+        const selectedSections = Array.from(secBoxes).map(cb => cb.value).join(', ');
+
+        if(!selectedCategories) return alert('Lütfen en az bir kategori seçin.');
+        if(!selectedSections) return alert('Lütfen en az bir görünüm alanı seçin.');
+
+        document.getElementById('btn-submit-prod').style.display = 'none';
+        document.getElementById('prod-loading').style.display = 'inline-block';
+
+        let imageNames = id ? allProducts.find(x=>x.id==id).imageUrl : "";
+
+        if (fileInput.files.length > 0) {
+            const formData = new FormData();
+            for(let i=0; i < fileInput.files.length; i++) { formData.append("files", fileInput.files[i]); }
+            try {
+                let uploadRes = await authFetch(API_URL + '/api/upload/multiple', { method: 'POST', body: formData });
+                imageNames = await uploadRes.text();
+            } catch(e) { alert("Fotoğraf yükleme hatası!"); cancelEdit(); return; }
+        }
+
+        const data = {
+            name: document.getElementById('prod-name').value, category: selectedCategories, section: selectedSections,
+            price: parseFloat(document.getElementById('prod-price').value), imageUrl: imageNames,
+            description: document.getElementById('prod-desc').value, sizeOptions: document.getElementById('prod-sizes').value,
+            flavorOptions: document.getElementById('prod-flavors').value, allergens: document.getElementById('prod-allergens').value,
+            isActive: document.getElementById('prod-isactive').value === "true"
+        };
+        const url = id ? API_URL + `/api/products/update/${id}` : API_URL + `/api/products/add`;
+        const method = id ? 'PUT' : 'POST';
+
+        authFetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(() => {
+            alert(id ? 'Ürün Güncellendi!' : 'Ürün Eklendi!');
+            cancelEdit(); fetchProducts();
+        });
+    }
+
+    function editProduct(id) {
+        const p = allProducts.find(x => x.id === id); if(!p) return;
+        document.getElementById('form-title').innerText = "Ürünü Düzenle";
+        document.getElementById('prod-id').value = p.id;
+        document.getElementById('prod-name').value = p.name;
+        document.getElementById('prod-price').value = p.price;
+        document.getElementById('prod-sizes').value = p.sizeOptions || "";
+        document.getElementById('prod-flavors').value = p.flavorOptions || "";
+        document.getElementById('prod-desc').value = p.description || "";
+        document.getElementById('prod-allergens').value = p.allergens || "";
+        document.getElementById('prod-isactive').value = p.isActive !== false ? "true" : "false";
+        document.getElementById('prod-file-text').innerText = p.imageUrl ? p.imageUrl.split(',').length + " mevcut resim" : "Yeni Resim Seç";
+
+        document.querySelectorAll('#prod-category-container input').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#prod-section-container input').forEach(cb => cb.checked = false);
+
+        if(p.category) { let pCats = p.category.split(',').map(s=>s.trim()); document.querySelectorAll('#prod-category-container input').forEach(cb => { if(pCats.includes(cb.value)) cb.checked = true; }); }
+        if(p.section) { let pSecs = p.section.split(',').map(s=>s.trim()); document.querySelectorAll('#prod-section-container input').forEach(cb => { if(pSecs.includes(cb.value)) cb.checked = true; }); }
+
+        document.getElementById('btn-submit-prod').innerHTML = '<i data-feather="save"></i> Değişiklikleri Kaydet';
+        document.getElementById('btn-cancel-edit').style.display = 'inline-flex';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+        document.getElementById('add-product-form').reset(); document.getElementById('prod-id').value = "";
+        document.getElementById('form-title').innerText = "Yeni Ürün Ekle"; document.getElementById('prod-file-text').innerText = "Sürükle veya Çoklu Seç";
+        document.getElementById('prod-isactive').value = "true";
+        document.querySelectorAll('#prod-category-container input').forEach(cb => cb.checked = false);
+        document.querySelectorAll('#prod-section-container input').forEach(cb => cb.checked = false);
+
+        document.getElementById('btn-submit-prod').style.display = 'inline-flex';
+        document.getElementById('btn-submit-prod').innerHTML = '<i data-feather="upload"></i> Ürünü Yükle ve Kaydet';
+        document.getElementById('btn-cancel-edit').style.display = 'none';
+        document.getElementById('prod-loading').style.display = 'none';
+    }
+
+    function deleteProduct(id) { if(confirm("Ürünü silmek istediğinize emin misiniz?")) { authFetch(API_URL + `/api/products/delete/${id}`, { method: 'DELETE' }).then(() => fetchProducts()); } }
+
+    function fetchOrders() {
+        authFetch(API_URL + '/api/orders/all').then(r=>r.json()).then(data => {
+            const dashTbody = document.querySelector('#dash-order-table tbody'); dashTbody.innerHTML = '';
+            const mainTbody = document.querySelector('#main-order-table tbody'); mainTbody.innerHTML = '';
+
+            data.forEach(order => {
+                let d = new Date(order.createdAt).toLocaleDateString('tr-TR');
+                let selectHtml = `<select class="form-control" style="padding:6px; font-size:12px; margin-bottom:5px;" onchange="updateStatus(${order.id}, this.value)"><option value="YENİ SİPARİŞ" ${order.status==='YENİ SİPARİŞ'?'selected':''}>Yeni Bekliyor</option><option value="Hazırlanıyor" ${order.status==='Hazırlanıyor'?'selected':''}>Hazırlanıyor</option><option value="Tamamlandı" ${order.status==='Tamamlandı'?'selected':''}>Tamamlandı</option></select>`;
+                dashTbody.innerHTML += `<tr><td><strong>${order.customerName}</strong></td><td><span style="font-size:12px;">${order.themeDetails}</span></td><td>${order.status}</td></tr>`;
+                mainTbody.innerHTML += `<tr><td>#${order.id}</td><td><strong>${order.customerName}</strong><br>${order.customerPhone}</td><td><div style="font-size:12px; background:#f9f9f9; padding:8px;">${order.themeDetails}</div></td><td>${d}</td><td>${selectHtml}</td><td><button class="btn btn-success btn-sm" onclick="sendWP('${order.customerPhone}', '${order.customerName}', '${order.id}')" style="margin-right:5px;"><i data-feather="message-circle"></i> WhatsApp</button><button class="btn btn-danger btn-sm" onclick="deleteOrder(${order.id})"><i data-feather="trash-2"></i></button></td></tr>`;
+            });
+            feather.replace();
+        });
+    }
+    function updateStatus(id, newStatus) { authFetch(API_URL + `/api/orders/update-status/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newStatus) }).then(() => fetchOrders()); }
+    function deleteOrder(id) { if(confirm("Bu siparişi silmek istediğinize emin misiniz?")) { authFetch(API_URL + `/api/orders/delete/${id}`, { method: 'DELETE' }).then(() => fetchOrders()); } }
+
+    function sendWP(phone, name, id) {
+        let cleanPhone = phone.replace(/[^0-9]/g, '');
+        if(!cleanPhone.startsWith('90') && cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
+        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Merhaba ${name} Hanım/Bey, Vanelli Cakery'den ulaşıyoruz. #${id} numaralı siparişiniz için yazıyorum.`)}`, '_blank');
+    }
+</script>
+</body>
+</html>
